@@ -12,3 +12,32 @@ docs/
 
 # Dotenv file
 .env
+
+# Ignore Forge test caches
+forge-cache/
+broadcast/
+
+# Ignore dependencies installed via Foundry
+lib/
+
+# Ignore environment files (API keys, secrets, etc.)
+.env
+.env.local
+.env.*.local
+
+# Ignore Node.js dependencies (if using Hardhat, JS scripts, or CI/CD tools)
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Ignore VSCode settings
+.vscode/
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
