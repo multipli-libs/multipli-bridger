@@ -64,3 +64,13 @@ $ forge --help
 $ anvil --help
 $ cast --help
 ```
+
+
+Some FAQs
+- Why are we not using Openzeppeling contracts directly?
+These contracts are already deployed and live, so we're using the exact code that's live in production.
+
+- Why can't we improve the file organisation? 
+This contract was written about couple of years ago when we didn't know better so the file organisation is a bit all over the place. We intend to release a new contract version that addresses most of the issues in the present one while adding more features to the contract.
+
+
