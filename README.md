@@ -18,10 +18,10 @@ Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC a
 - **BSC Bridger Contract**: [0xd0ec30e908d16f581417c54be3c6ff3189abd259](https://bscscan.com/address/0xd0ec30e908d16f581417c54be3c6ff3189abd259)
 - **StarkEx Proxy Contract**: [0x1390f521a79babe99b69b37154d63d431da27a07](https://etherscan.io/address/0x1390f521a79babe99b69b37154d63d431da27a07)
 
-## Core Functionality
+## Core Functionality and Flow
 
 ### Deposit (Buy) Flow
-1. Users deposit funds to the MultipliBridger contract
+1. Users deposit funds to the "MultipliBridger" contract
 2. Equivalent "x" tokens (e.g., xUSDT, xUSDC) are transferred to users on the L2 (StarkEx)
 
 ### Withdrawal (Sell) Flow
@@ -29,7 +29,7 @@ Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC a
 2. Funds are transferred from user's vault to Multipli's vault on L2
 3. Processing takes 4-10 days
 4. Multipli adds required funds to the MultipliBridger contract
-5. Authorized wallet calls `withdraw` method to transfer funds to user wallets
+5. Authorized wallet calls `withdraw` method in **MultipliBridger** contract to transfer funds to user wallets
 6. Each withdrawal (`withdraw`) takes a parameter withdrawalID in the format "UC_{sell_sequencer_id}"
 7. Storing the withdrawalID in the contract prevents the off-chain worker from processing the same request multiple times.
 
@@ -38,7 +38,7 @@ Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC a
 2. Users can claim accrued yield
 3. Processing takes 4-10 days
 4. Multipli adds required funds to the MultipliBridger contract
-5. Authorized wallet calls `withdraw` method to transfer funds to user wallets
+5. Authorized wallet calls `withdraw` method in **MultipliBridger** contract to transfer funds to user wallets
 6. Each yield claim (processsed using `withdraw` method) takes a parameter withdrawalID in the format "YC_{yield_sequencer_id}"
 7. Storing the withdrawalID in the contract prevents the off-chain worker from processing the same request multiple times.
 
@@ -53,7 +53,12 @@ Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC a
   - `removeFunds`
   - `removeFundsNative`
 
-## Important Notes for Auditors
+## Important Notes for Readers
+
+
+### Code Origin
+- Contracts use code from older versions of OpenZeppelin (not the latest) and Uniswap V2.
+- This is intentional to match already deployed production contracts
 
 ### Security Considerations
 1. The Owner is automatically added to authorized users on initialization
@@ -63,9 +68,6 @@ Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC a
 4. `removeFundsNative` uses `transfer` instead of the recommended `.call` method (legacy reasons)
 5. No token whitelisting - users can deposit any token
 
-### Code Origin
-- Contracts use code from older versions of OpenZeppelin (not the latest) and Uniswap V2.
-- This is intentional to match already deployed production contracts
 
 ### Known Issues
 - Contract organization is suboptimal (legacy reasons)
