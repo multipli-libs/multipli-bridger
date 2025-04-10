@@ -17,8 +17,6 @@ docs/
 forge-cache/
 broadcast/
 
-# Ignore dependencies installed via Foundry
-lib/
 
 # Ignore environment files (API keys, secrets, etc.)
 .env
