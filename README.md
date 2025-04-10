@@ -2,7 +2,7 @@
 
 ## Overview
 
-Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC and StarkEx-based Layer 2. The system handles deposits, withdrawals, and yield claims through a set of smart contracts.
+Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC and StarkEx-based Layer 2. The system handles deposits, withdrawals, and yield claims through a set of smart contracts. This contract is expected to be work with all EVM-compatible chains. 
 
 ## System Architecture
 
