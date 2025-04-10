@@ -1,4 +1,4 @@
-# Multipli Protocol - Smart Contract Audit Documentation
+# Multipli Protocol - Smart Contract Documentation
 
 ## Overview
 
