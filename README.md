@@ -8,7 +8,7 @@ Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC a
 
 ### Key Components
 
-- **MultipliBridger Contract**: Main contract handling deposits and withdrawals
+- **MultipliBridger Contract**: Contract handling deposits and withdrawals
 - **StarkEx Infrastructure**: L2 solution where user balances are managed (https://docs.starkware.co/starkex/architecture/solution-architecture.html)
 - **Off-chain Sequencer**: Manages withdrawal and yield claim IDs
 
