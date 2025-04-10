@@ -7,4 +7,8 @@ remappings = [
     "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
 ]
 
+[rpc_endpoints]
+eth_mainnet = "${ETHEREUM_MAINNET_RPC_URL}"
+bnb_mainnet = "${BNB_MAINNET_RPC_URL}"
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
