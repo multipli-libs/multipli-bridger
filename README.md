@@ -30,7 +30,7 @@ Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC a
 3. Processing takes 4-10 days
 4. Multipli adds required funds to the MultipliBridger contract
 5. Authorized wallet calls `withdraw` method in **MultipliBridger** contract to transfer funds to user wallets
-6. Each withdrawal (`withdraw`) takes a parameter withdrawalID in the format "UC_{sell_sequencer_id}"
+6. Each withdrawal (`withdraw`) takes a parameter withdrawalID in the format "US_{sell_sequencer_id}"
 7. Storing the withdrawalID in the contract prevents the off-chain worker from processing the same request multiple times.
 
 ### Yield Claim Flow
