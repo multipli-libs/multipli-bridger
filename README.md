@@ -20,7 +20,7 @@ Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC a
 
 ## Core Functionality
 
-### Deposit Flow
+### Deposit (Buy) Flow
 1. Users deposit funds to the MultipliBridger contract
 2. Equivalent "x" tokens (e.g., xUSDT, xUSDC) are transferred to users on the L2 (StarkEx)
 
@@ -30,7 +30,8 @@ Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC a
 3. Processing takes 4-10 days
 4. Multipli adds required funds to the MultipliBridger contract
 5. Authorized wallet calls `withdraw` method to transfer funds to user wallets
-6. Each withdrawal has a unique ID in the format "UC_{sell_sequence_id}"
+6. Each withdrawal (`withdraw`) takes a parameter withdrawalID in the format "UC_{sell_sequencer_id}"
+7. Storing the withdrawalID in the contract prevents the off-chain worker from processing the same request multiple times.
 
 ### Yield Claim Flow
 1. Yield accrues off-chain daily based on user's "x" token holdings
@@ -38,7 +39,8 @@ Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC a
 3. Processing takes 4-10 days
 4. Multipli adds required funds to the MultipliBridger contract
 5. Authorized wallet calls `withdraw` method to transfer funds to user wallets
-6. Each yield claim has a unique ID in the format "YC_{yield_sequencer_id}"
+6. Each yield claim (processsed using `withdraw` method) takes a parameter withdrawalID in the format "YC_{yield_sequencer_id}"
+7. Storing the withdrawalID in the contract prevents the off-chain worker from processing the same request multiple times.
 
 ## Permission Model
 
