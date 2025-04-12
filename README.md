@@ -21,26 +21,58 @@ Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC a
 ## Core Functionality and Flow
 
 ### Deposit (Buy) Flow
-1. Users deposit funds to the "MultipliBridger" contract
-2. Equivalent "x" tokens (e.g., xUSDT, xUSDC) are transferred to users on the L2 (StarkEx)
+1. Users deposit tokens (USDT, USDC and others) to the **MultipliBridger** contract using `deposit` method.
+2. Once deposit is confirmed, equivalent "x" tokens (e.g., xUSDT, xUSDC) are transferred to users on the L2 (StarkEx)
 
 ### Withdrawal (Sell) Flow
 1. User signs a transfer request on L2
-2. Funds are transferred from user's vault to Multipli's vault on L2
-3. Processing takes 4-10 days
-4. Multipli adds required funds to the MultipliBridger contract
-5. Authorized wallet calls `withdraw` method in **MultipliBridger** contract to transfer funds to user wallets
-6. Each withdrawal (`withdraw`) takes a parameter withdrawalID in the format "US_{sell_sequencer_id}"
-7. Storing the withdrawalID in the contract prevents the off-chain worker from processing the same request multiple times.
+2. Funds are transferred from user's vault to Multipli's vault on L2. 
+3. Off-chain sequencer assigns a "Sell Sequence ID" to this "Sell" request, which is of the format "US_{sell_sequencer_id}". Off-chain sequencer guarantees that no two withdrawals will have the same "Sell Sequence ID".
+4. Processing takes 4-10 days
+5. Within this time, Multipli adds required funds to the MultipliBridger contract to process the Sell request.
+6. Authorized wallet calls `withdraw` method in **MultipliBridger** contract to transfer funds to user wallets
+7. Each withdrawal (`withdraw` method) takes a parameter `withdrawalID`, which corresponds to the Sell Sequence ID assigned in Step 3.
+8. The `withdraw` method checks if the given withdrawalID has already been processed.
+- If not: funds are transferred to the user.
+- If yes: the method reverts.  
+This mechanism ensures users don’t receive duplicate payouts in case the off-chain worker calls `withdraw` more than once with the same ID.
 
 ### Yield Claim Flow
 1. Yield accrues off-chain daily based on user's "x" token holdings
 2. Users can claim accrued yield
-3. Processing takes 4-10 days
-4. Multipli adds required funds to the MultipliBridger contract
-5. Authorized wallet calls `withdraw` method in **MultipliBridger** contract to transfer funds to user wallets
-6. Each yield claim (processsed using `withdraw` method) takes a parameter withdrawalID in the format "YC_{yield_sequencer_id}"
-7. Storing the withdrawalID in the contract prevents the off-chain worker from processing the same request multiple times.
+3. Off-chain sequencer assigns a "Yield Claim Sequence ID" to this "Yield Claim" request, which is of the format "YC_{yield_sequencer_id}". Off-chain sequencer guarantees that no two Yield Claims will have the same "Yield Claim Sequence ID".
+4. Processing takes 4-10 days
+5. Within this time, Multipli adds required funds to the MultipliBridger contract to process the Yield Claim.
+6. Authorized wallet calls `withdraw` method in **MultipliBridger** contract to transfer funds to user wallets
+7. Yield claim amount is sent to the user using `withdraw` method, which corresponds to the "Yield Claim Sequence ID" assigned in Step 3.
+8. The `withdraw` method checks if the given withdrawalID has already been processed.
+- If not: funds are transferred to the user.
+- If yes: the method reverts.  
+This mechanism ensures users don’t receive duplicate payouts in case the off-chain worker calls `withdraw` more than once with the same ID.
+
+### Yield Claim and Sell Schedule
+
+If a user initiates a Yield Claim or Sell request **before 12 AM Monday**, they will receive the funds on the **upcoming Thursday**.  
+If the request is made **anytime after 12 AM Monday**, the user will receive the funds on the **following Thursday** (i.e., the Thursday after the upcoming one).
+
+Having a fixed weekly processing day for yield claims and sell requests helps us manage liquidity more effectively.  
+Multipli runs various [delta-neutral strategies](https://docs.multipli.fi/yield-explanation/execution-for-stables), and a set disbursal schedule ensures we have adequate time to unwind or rebalance positions.
+
+---
+
+### Fund Removal Flow from Contract
+
+A sweeper daemon monitors the **MultipliBridger** contract. Once a defined threshold is reached, the daemon initiates a `removeFunds` request.  
+The `removeFunds` function takes a parameter `to`, which specifies the recipient address.  
+This recipient can either be a centralized exchange (CEX) address or an OES provider.
+
+---
+
+### Fund Addition to Contract for Processing Yield Claims and Sell Requests
+
+Funds are moved from centralized exchanges or OES providers to the contract **before Thursday**.  
+In the case of a CEX, the `transfer` method (ERC-20 standard) is used to send the required tokens (e.g., USDT, USDC) from the CEX to the contract.
+
 
 ## Permission Model
 
