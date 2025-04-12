@@ -93,10 +93,22 @@ cast wallet import local-deployer --interactive
 
 2. Deploy contract:
 ```bash
+# Network options:
+#   --rpc-url eth_mainnet    # Ethereum Mainnet
+#   --rpc-url bnb_mainnet    # Binance Smart Chain Mainnet
+#   (Use any network defined in foundry.toml)
+# 
+# Other parameters:
+#   --sender <address>       # Public address of the deployer
+#   --account local-deployer  # Account name previously imported via:
+#                            # cast wallet import local-deployer --interactive
 forge script ./script/deploy/DeployMultipliBridger.s.sol:DeployMultipliBridger --rpc-url <network> --account <account_name> --sender <sender_address> --broadcast -vvvv
 
 # Example (local)
 forge script ./script/deploy/DeployMultipliBridger.s.sol:DeployMultipliBridger --rpc-url http://localhost:8545 --account local-deployer --sender 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 --broadcast -vvvv
+
+# Example (production - ethereum)
+forge script ./script/deploy/DeployMultipliBridger.s.sol:DeployMultipliBridger --rpc-url eth_mainnet --account prod-deployer --sender <address> --broadcast -vvvv
 ```
 
 ## Future Improvements
