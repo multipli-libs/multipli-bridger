@@ -87,6 +87,21 @@ abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
 contract MultipliBridger is OwnableUpgradeable {
     mapping(address => bool) public authorized;
     mapping(string => bool) public processedWithdrawalIds;
+    mapping(address => bool) public registeredTokens;
+    
+    event TokenRegistered(address indexed token, address indexed by);
+    event TokenUnregistered(address indexed token, address indexed by);
+    event BridgedDeposit(
+        address indexed user,
+        address indexed token,
+        uint256 amount
+    );
+    event BridgedWithdrawal(
+        address indexed user,
+        address indexed token,
+        uint256 amount,
+        string withdrawalId
+    );
 
     modifier _isAuthorized() {
         require(authorized[msg.sender], "UNAUTHORIZED");
@@ -101,18 +116,11 @@ contract MultipliBridger is OwnableUpgradeable {
         );
         _;
     }
-
-    event BridgedDeposit(
-        address indexed user,
-        address indexed token,
-        uint256 amount
-    );
-    event BridgedWithdrawal(
-        address indexed user,
-        address indexed token,
-        uint256 amount,
-        string withdrawalId
-    );
+    
+    modifier _isRegisteredToken(address token) {
+        require(registeredTokens[token], "Token is not registered");
+        _;
+    }
 
     function initialize() public initializer {
         __Ownable_init();
@@ -120,9 +128,35 @@ contract MultipliBridger is OwnableUpgradeable {
     }
 
     /**
-     * @dev Deposit ERC20 tokens into the contract address, must be approved
+     * @dev Register a token that can be used for deposits
+     * NOTE: only owner or authorized users can register tokens
      */
-    function deposit(address token, uint256 amount) external {
+    function registerToken(address token) external _isAuthorized {
+        require(token != address(0), "Cannot register zero address as token");
+        require(!registeredTokens[token], "Token already registered");
+        
+        registeredTokens[token] = true;
+        
+        emit TokenRegistered(token, msg.sender);
+    }
+    
+    /**
+     * @dev Unregister a token
+     * NOTE: only owner or authorized users can unregister tokens
+     */
+    function unregisterToken(address token) external _isAuthorized {
+        require(registeredTokens[token], "Token not registered");
+        
+        registeredTokens[token] = false;
+        
+        emit TokenUnregistered(token, msg.sender);
+    }
+
+    /**
+     * @dev Deposit ERC20 tokens into the contract address, must be approved
+     * NOTE: token must be registered
+     */
+    function deposit(address token, uint256 amount) external _isRegisteredToken(token) {
         TransferHelper.safeTransferFrom(
             token,
             msg.sender,
