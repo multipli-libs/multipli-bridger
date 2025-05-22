@@ -254,21 +254,21 @@ contract TestMultipliBridger is Test {
         vm.stopPrank();
     }
 
-    function testUnregisterTokenRevertsWhenCalledByUnauthorizedUser() public deployerIsNaruto {
+    function testDeregisterTokenRevertsWhenCalledByUnauthorizedUser() public deployerIsNaruto {
         vm.startPrank(minatoAddr);
         vm.expectRevert("UNAUTHORIZED");
-        bridger.unregisterToken(address(token));
+        bridger.deregisterToken(address(token));
         vm.stopPrank();
     }
     
-    function testUnregisterTokenRevertsWhenTokenIsNotRegistered() public deployerIsNaruto {
+    function testDeregisterTokenRevertsWhenTokenIsNotRegistered() public deployerIsNaruto {
         vm.startPrank(narutoAddr);
         vm.expectRevert("Token not registered");
-        bridger.unregisterToken(address(token));
+        bridger.deregisterToken(address(token));
         vm.stopPrank();
     }
     
-    function testUnregisterTokenIsSuccessWhenCalledByAuthorizedUser() public deployerIsNaruto {
+    function testDeregisterTokenIsSuccessWhenCalledByAuthorizedUser() public deployerIsNaruto {
         vm.startPrank(narutoAddr);
         
         // Register token first
@@ -277,10 +277,10 @@ contract TestMultipliBridger is Test {
         
         // Set emit expectations
         vm.expectEmit(true, true, false, true);
-        emit MultipliBridger.TokenUnregistered(address(token), narutoAddr);
+        emit MultipliBridger.TokenDeregistered(address(token), narutoAddr);
         
         // Unregister token
-        bridger.unregisterToken(address(token));
+        bridger.deregisterToken(address(token));
         
         // Verify token is unregistered
         assertFalse(bridger.registeredTokens(address(token)));
