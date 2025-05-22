@@ -91,7 +91,7 @@ contract MultipliBridger is OwnableUpgradeable {
     mapping(address => bool) public registeredTokens;
     
     event TokenRegistered(address indexed token, address indexed by);
-    event TokenUnregistered(address indexed token, address indexed by);
+    event TokenDeregistered(address indexed token, address indexed by);
     event BridgedDeposit(
         address indexed user,
         address indexed token,
@@ -145,12 +145,12 @@ contract MultipliBridger is OwnableUpgradeable {
      * @dev Unregister a token
      * NOTE: only owner or authorized users can unregister tokens
      */
-    function unregisterToken(address token) external _isAuthorized {
+    function deregisterToken(address token) external _isAuthorized {
         require(registeredTokens[token], "Token not registered");
         
         registeredTokens[token] = false;
         
-        emit TokenUnregistered(token, msg.sender);
+        emit TokenDeregistered(token, msg.sender);
     }
 
     /**
