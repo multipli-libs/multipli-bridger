@@ -98,14 +98,12 @@ In the case of a CEX, the `transfer` method (ERC-20 standard) is used to send th
 3. Use `transferOwner` instead of `transferOwnership`
    - `transferOwnership` does not remove the old owner from authorized users
 4. `removeFundsNative` uses `transfer` instead of the recommended `.call` method (legacy reasons)
-5. No token whitelisting - users can deposit any token
-
+5. Token whitelisting for deposits is managed through the `registerToken(address)` and `deregisterToken(address)` functions.
 
 ### Known Issues
 - Contract organization is suboptimal (legacy reasons)
 - Care should be taken not to include contract addresses in the list of authorized users
 - Add address whitelisting for removeFunds and removeFundsNative.
-- No token whitelisting - users can deposit any token. 
 - Duplicate public methods with different behaviours:- transferOwner vs transferOwnership:- `transferOwnership` should not be used. Always use `transferOwner`.
 
 ## Development & Testing
@@ -145,7 +143,6 @@ forge script ./script/deploy/DeployMultipliBridger.s.sol:DeployMultipliBridger -
 
 ## Future Improvements
 - A new contract version is planned to address current organizational issues and add features
-- Token whitelisting functionality
 - Improved permission model: Currently, authorized users can withdraw funds to any address. There are off-chain scripts in place that automatically sweep funds from the contract to OES providers or exchanges once a certain balance threshold is reached. This ensures that the contract never holds a large amount of funds at any given time.
 - Support bulk withdrawals
 - Add whitelisting for recipient of `removeFunds` so funds can be transferred to pre-defined addresses/contracts. 
