@@ -137,8 +137,7 @@ contract TestMultipliBridger is Test {
         vm.stopPrank();
     }
 
-    // Note: This is a known bug where it's possible to set address(0) as a authorized user
-    function testAuthorizeOnZeroAddress() public deployerIsNaruto {
+    function testAuthorizeOnZeroAddressReverts() public deployerIsNaruto {
         vm.startPrank(narutoAddr);
 
         address user = address(0);
@@ -146,16 +145,34 @@ contract TestMultipliBridger is Test {
         // sanity check to ensure user is not a authorized user
         assertFalse(bridger.authorized(user));
 
-        // authorize "user"
+        // This should now revert with the new validation
+        vm.expectRevert("Authorization: user cannot be zero address");
         bridger.authorize(user, true);
-        assertTrue(bridger.authorized(user));
-
-        // unauthorize "user"
-        bridger.authorize(user, false);
-        assertFalse(bridger.authorized(user));
 
         vm.stopPrank();
     }
+
+    function testAuthorizeRevertsOnDuplicateStatus() public deployerIsNaruto {
+        vm.startPrank(narutoAddr);
+
+        // First, authorize minato
+        bridger.authorize(minatoAddr, true);
+        assertTrue(bridger.authorized(minatoAddr));
+
+        // Try to authorize again with same status - should revert
+        vm.expectRevert("Authorization: user already has this authorization status");
+        bridger.authorize(minatoAddr, true);
+
+        // Now try to unauthorize minato
+        bridger.authorize(minatoAddr, false);
+        assertFalse(bridger.authorized(minatoAddr));
+
+        // Try to unauthorize again with same status - should revert
+        vm.expectRevert("Authorization: user already has this authorization status");
+        bridger.authorize(minatoAddr, false);
+
+        vm.stopPrank();
+}
 
     // Note: Depending on whom you ask, this is either a security feature or a bug
     // Owner can be removed from the list of authorized users
@@ -190,6 +207,56 @@ contract TestMultipliBridger is Test {
         vm.startPrank(narutoAddr);
         vm.expectRevert("Ownable: new owner is the zero address");
         bridger.transferOwner(address(0));
+        vm.stopPrank();
+    }
+
+    function testTransferOwnerRevertsWhenNewOwnerIsSameAsCurrent() public deployerIsNaruto {
+        vm.startPrank(narutoAddr);
+        vm.expectRevert("Ownable: new owner is the same as current owner");
+        bridger.transferOwnership(narutoAddr); // Try to transfer to self
+        vm.stopPrank();
+    }
+
+    function testTransferOwnershipSuccess() public deployerIsNaruto {
+        vm.startPrank(narutoAddr);
+        
+        // Verify initial owner
+        assertEq(bridger.owner(), narutoAddr);
+        
+        // Transfer ownership to minato
+        bridger.transferOwnership(minatoAddr);
+        
+        // Verify ownership has changed
+        assertEq(bridger.owner(), minatoAddr);
+        
+        vm.stopPrank();
+    }
+
+    function testAuthorizationStatusAfterOwnershipTransfer() public deployerIsNaruto {
+        vm.startPrank(narutoAddr);
+        
+        // Authorize minato
+        bridger.authorize(minatoAddr, true);
+        assertTrue(bridger.authorized(minatoAddr));
+        
+        // Transfer ownership to sasuke
+        bridger.transferOwnership(sasukeAddr);
+        
+        vm.stopPrank();
+        
+        // Check that minato is still authorized after ownership transfer
+        assertTrue(bridger.authorized(minatoAddr));
+        
+        // But naruto (old owner) should no longer be able to modify authorizations
+        vm.startPrank(narutoAddr);
+        vm.expectRevert("Ownable: caller is not the owner");
+        bridger.authorize(minatoAddr, false);
+        vm.stopPrank();
+        
+        // New owner should be able to modify authorizations
+        vm.startPrank(sasukeAddr);
+        bridger.authorize(minatoAddr, false);
+        assertFalse(bridger.authorized(minatoAddr));
         vm.stopPrank();
     }
 
