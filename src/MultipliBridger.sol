@@ -3,6 +3,7 @@
 pragma solidity 0.8.29;
 import {Initializable, ContextUpgradeable} from "./Initializable.sol";
 import "./TransferHelper.sol";
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -158,13 +159,21 @@ contract MultipliBridger is OwnableUpgradeable {
      * NOTE: token must be registered
      */
     function deposit(address token, uint256 amount) external _isRegisteredToken(token) {
+        // Store balance before transfer
+        uint256 balanceBefore = IERC20(token).balanceOf(address(this));
+
         TransferHelper.safeTransferFrom(
             token,
             msg.sender,
             address(this),
             amount
         );
-        emit BridgedDeposit(msg.sender, token, amount);
+
+        // Calculate actual amount received (accounts for fee-on-transfer tokens)
+        uint256 balanceAfter = IERC20(token).balanceOf(address(this));
+        uint256 actualAmountReceived = balanceAfter - balanceBefore;
+
+        emit BridgedDeposit(msg.sender, token, actualAmountReceived);
     }
 
     /**

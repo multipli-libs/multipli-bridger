@@ -11,8 +11,60 @@ import {DeployMultipliBridger} from "../../script/deploy/DeployMultipliBridger.s
 
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 
+/**
+ * @title FeeOnTransferMock
+ * @dev Mocks a fee-on-transfer token by imposing a 5% fee on transfers
+ */
+contract FeeOnTransferMock is ERC20 {
+    uint256 public constant FEE_PERCENT = 5; // 5% fee
+
+    constructor() ERC20("FeeToken", "FEE") {}
+
+    /**
+     * @dev Mint function to create tokens for testing
+     */
+    function mint(address to, uint256 amount) external {
+        _mint(to, amount);
+    }
+
+    /**
+     * @dev Override the transfer function to apply a fee
+     */
+    function transfer(address to, uint256 amount) public override returns (bool) {
+        uint256 fee = (amount * FEE_PERCENT) / 100;
+        uint256 actualAmount = amount - fee;
+        
+        // Transfer the amount minus fee
+        super.transfer(to, actualAmount);
+        
+        // The fee remains in the sender's address, effectively "burned"
+        return true;
+    }
+
+    /**
+     * @dev Override the transferFrom function to apply a fee
+     */
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) public override returns (bool) {
+        uint256 fee = (amount * FEE_PERCENT) / 100;
+        uint256 actualAmount = amount - fee;
+        
+        // Reduce allowance by the full amount
+        _spendAllowance(from, _msgSender(), amount);
+        
+        // Transfer the amount minus fee
+        _transfer(from, to, actualAmount);
+        
+        // The fee remains in the sender's address, effectively "burned"
+        return true;
+    }
+}
 
 
 contract TestMultipliBridger is Test {
@@ -371,6 +423,49 @@ contract TestMultipliBridger is Test {
         vm.expectRevert("Token is not registered");
         bridger.deposit(address(token), amountToDeposit);
 
+        vm.stopPrank();
+    }
+
+    // Test for the fixed implementation - this should pass
+    function testDepositWithFeeOnTransferTokenCorrectAccounting() public deployerIsNaruto {
+        // Deploy our fee-on-transfer token mock
+        FeeOnTransferMock feeToken = new FeeOnTransferMock();
+        
+        // Register the token with the bridger
+        vm.startPrank(narutoAddr);
+        bridger.registerToken(address(feeToken));
+        vm.stopPrank();
+        
+        // Mint tokens to Minato for testing
+        feeToken.mint(minatoAddr, 100e18);
+        
+        // Track contract's initial balance
+        uint256 initialContractBalance = feeToken.balanceOf(address(bridger));
+        
+        vm.startPrank(minatoAddr);
+        
+        // Amount to deposit
+        uint256 amountToDeposit = 100e18;
+        
+        // Approve the transfer
+        feeToken.approve(address(bridger), amountToDeposit);
+        
+        // Due to the 5% fee, the contract should receive 95% of amountToDeposit
+        uint256 expectedReceivedAmount = amountToDeposit * 95 / 100;
+      
+        // Set emit expectations - with the fix, the event should emit the actual received amount
+        vm.expectEmit(true, true, false, true);
+        emit MultipliBridger.BridgedDeposit(minatoAddr, address(feeToken), expectedReceivedAmount);
+        
+        // Make the deposit
+        bridger.deposit(address(feeToken), amountToDeposit);
+        
+        // Check the actual amount received
+        uint256 actualReceivedAmount = feeToken.balanceOf(address(bridger)) - initialContractBalance;
+
+        // With the fixed contract, the event amount should match the actual received amount
+        assertEq(actualReceivedAmount, expectedReceivedAmount);
+        
         vm.stopPrank();
     }
 
