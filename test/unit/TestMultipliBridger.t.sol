@@ -11,8 +11,60 @@ import {DeployMultipliBridger} from "../../script/deploy/DeployMultipliBridger.s
 
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 
+/**
+ * @title FeeOnTransferMock
+ * @dev Mocks a fee-on-transfer token by imposing a 5% fee on transfers
+ */
+contract FeeOnTransferMock is ERC20 {
+    uint256 public constant FEE_PERCENT = 5; // 5% fee
+
+    constructor() ERC20("FeeToken", "FEE") {}
+
+    /**
+     * @dev Mint function to create tokens for testing
+     */
+    function mint(address to, uint256 amount) external {
+        _mint(to, amount);
+    }
+
+    /**
+     * @dev Override the transfer function to apply a fee
+     */
+    function transfer(address to, uint256 amount) public override returns (bool) {
+        uint256 fee = (amount * FEE_PERCENT) / 100;
+        uint256 actualAmount = amount - fee;
+        
+        // Transfer the amount minus fee
+        super.transfer(to, actualAmount);
+        
+        // The fee remains in the sender's address, effectively "burned"
+        return true;
+    }
+
+    /**
+     * @dev Override the transferFrom function to apply a fee
+     */
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) public override returns (bool) {
+        uint256 fee = (amount * FEE_PERCENT) / 100;
+        uint256 actualAmount = amount - fee;
+        
+        // Reduce allowance by the full amount
+        _spendAllowance(from, _msgSender(), amount);
+        
+        // Transfer the amount minus fee
+        _transfer(from, to, actualAmount);
+        
+        // The fee remains in the sender's address, effectively "burned"
+        return true;
+    }
+}
 
 
 contract TestMultipliBridger is Test {
@@ -50,12 +102,21 @@ contract TestMultipliBridger is Test {
         bridger.authorize(user, true);
         vm.stopPrank();
         _;
-    }
+    } 
     modifier unauthorizeUser (address user) {
         require(address(bridger) != address(0), "bridger not deployed");
 
         vm.startPrank(bridger.owner());
         bridger.authorize(user, false);
+        vm.stopPrank();
+        _;
+    }
+
+    modifier registerToken (address tokenAddr) {
+        require(address(bridger) != address(0), "bridger not deployed");
+
+        vm.startPrank(bridger.owner());
+        bridger.registerToken(tokenAddr);
         vm.stopPrank();
         _;
     }
@@ -70,8 +131,8 @@ contract TestMultipliBridger is Test {
         console.log("Minato Address: %s", minatoAddr);
 
         token = new ERC20Mock();
-
-    }
+        
+        }
 
     function testOwnerIsInitializedCorrectlyForNaruto() public deployerIsNaruto {
         // make sure it is initialized
@@ -198,6 +259,149 @@ contract TestMultipliBridger is Test {
         vm.stopPrank();
     }
 
+    /* Token Registration Tests */
+    function testRegisterTokenRevertsWhenCalledByUnAuthorizedUser() public deployerIsNaruto {
+        vm.startPrank(minatoAddr);
+        vm.expectRevert("UNAUTHORIZED");
+        bridger.registerToken(address(token));
+        vm.stopPrank();
+    }
+
+    function testRegisterTokenRevertsWhenTokenAddressIsZero() public deployerIsNaruto {
+        vm.startPrank(narutoAddr);
+        vm.expectRevert("Cannot register zero address as token");
+        bridger.registerToken(address(0));
+        vm.stopPrank();
+    }
+
+    function testRegisterTokenIsSuccessWhenCalledByAuthorizedUser() public deployerIsNaruto {
+        vm.startPrank(narutoAddr);
+        
+        // Ensure token is not already registered
+        assertFalse(bridger.registeredTokens(address(token)));
+        
+        // Set emit expectations
+        vm.expectEmit(true, true, false, true);
+        emit MultipliBridger.TokenRegistered(address(token), narutoAddr);
+        
+        // Register token
+        bridger.registerToken(address(token));
+        
+        // Verify token is registered
+        assertTrue(bridger.registeredTokens(address(token)));
+        
+        vm.stopPrank();
+    }
+    
+    function testRegisterTokenRevertsWhenTokenIsAlreadyRegistered() public deployerIsNaruto {
+        vm.startPrank(narutoAddr);
+        
+        // Register token first
+        bridger.registerToken(address(token));
+        
+        // Try to register again
+        vm.expectRevert("Token already registered");
+        bridger.registerToken(address(token));
+        
+        vm.stopPrank();
+    }
+
+    function testDeregisterTokenRevertsWhenCalledByUnauthorizedUser() public deployerIsNaruto {
+        vm.startPrank(minatoAddr);
+        vm.expectRevert("UNAUTHORIZED");
+        bridger.deregisterToken(address(token));
+        vm.stopPrank();
+    }
+    
+    function testDeregisterTokenRevertsWhenTokenIsNotRegistered() public deployerIsNaruto {
+        vm.startPrank(narutoAddr);
+        vm.expectRevert("Token not registered");
+        bridger.deregisterToken(address(token));
+        vm.stopPrank();
+    }
+    
+    function testDeregisterTokenIsSuccessWhenCalledByAuthorizedUser() public deployerIsNaruto {
+        vm.startPrank(narutoAddr);
+        
+        // Register token first
+        bridger.registerToken(address(token));
+        assertTrue(bridger.registeredTokens(address(token)));
+        
+        // Set emit expectations
+        vm.expectEmit(true, true, false, true);
+        emit MultipliBridger.TokenDeregistered(address(token), narutoAddr);
+        
+        // Unregister token
+        bridger.deregisterToken(address(token));
+        
+        // Verify token is unregistered
+        assertFalse(bridger.registeredTokens(address(token)));
+        
+        vm.stopPrank();
+    }
+
+    /* Modified Deposit Tests to include token registration */
+    function testDepositRevertsWhenTokenIsNotRegistered() public deployerIsNaruto {
+        vm.startPrank(minatoAddr);
+
+        // ensure balance of Minato is 11 ether
+        deal(address(token), minatoAddr, 11 ether);
+        assertEq(token.balanceOf(minatoAddr), 11 ether);
+        
+        // amount to deposit
+        uint256 amountToDeposit = 10e18;
+        token.approve(address(bridger), amountToDeposit);
+
+        // Token is not registered, so deposit should revert
+        vm.expectRevert("Token is not registered");
+        bridger.deposit(address(token), amountToDeposit);
+
+        vm.stopPrank();
+    }
+
+    // Test for the fixed implementation - this should pass
+    function testDepositWithFeeOnTransferTokenCorrectAccounting() public deployerIsNaruto {
+        // Deploy our fee-on-transfer token mock
+        FeeOnTransferMock feeToken = new FeeOnTransferMock();
+        
+        // Register the token with the bridger
+        vm.startPrank(narutoAddr);
+        bridger.registerToken(address(feeToken));
+        vm.stopPrank();
+        
+        // Mint tokens to Minato for testing
+        feeToken.mint(minatoAddr, 100e18);
+        
+        // Track contract's initial balance
+        uint256 initialContractBalance = feeToken.balanceOf(address(bridger));
+        
+        vm.startPrank(minatoAddr);
+        
+        // Amount to deposit
+        uint256 amountToDeposit = 100e18;
+        
+        // Approve the transfer
+        feeToken.approve(address(bridger), amountToDeposit);
+        
+        // Due to the 5% fee, the contract should receive 95% of amountToDeposit
+        uint256 expectedReceivedAmount = amountToDeposit * 95 / 100;
+      
+        // Set emit expectations - with the fix, the event should emit the actual received amount
+        vm.expectEmit(true, true, false, true);
+        emit MultipliBridger.BridgedDeposit(minatoAddr, address(feeToken), expectedReceivedAmount);
+        
+        // Make the deposit
+        bridger.deposit(address(feeToken), amountToDeposit);
+        
+        // Check the actual amount received
+        uint256 actualReceivedAmount = feeToken.balanceOf(address(bridger)) - initialContractBalance;
+
+        // With the fixed contract, the event amount should match the actual received amount
+        assertEq(actualReceivedAmount, expectedReceivedAmount);
+        
+        vm.stopPrank();
+    }
+
     function testAddFundsRevertsWhenCalledByUnAuthorizedUser() public deployerIsNaruto {
         // Minato is an unauthorized user
         vm.startPrank(minatoAddr);
@@ -246,7 +450,7 @@ contract TestMultipliBridger is Test {
         assertEq(bridger.owner(), narutoAddr);
         assertEq(bridger.authorized(narutoAddr), false);
 
-        
+
         // Naruto is owner of the contract but an unauthorized user
         vm.startPrank(narutoAddr);
         
@@ -307,7 +511,7 @@ contract TestMultipliBridger is Test {
         vm.stopPrank();
     }
 
-    function testDepositWhenCalledWithInsufficientBalanceReverts() public deployerIsNaruto {
+    function testDepositWhenCalledWithInsufficientBalanceReverts() public deployerIsNaruto registerToken(address(token)) {
         vm.startPrank(minatoAddr);
 
         // ensure balance is 0
@@ -330,7 +534,7 @@ contract TestMultipliBridger is Test {
         vm.stopPrank();
     }
 
-    function testDepositWhenCalledWithoutApprovalReverts() public deployerIsNaruto {
+    function testDepositWhenCalledWithoutApprovalReverts() public deployerIsNaruto registerToken(address(token)) {
         vm.startPrank(minatoAddr);
 
         // ensure balance of Minato is 11 ether
@@ -356,7 +560,7 @@ contract TestMultipliBridger is Test {
         vm.stopPrank();
     }
 
-    function testDepositIsSuccess() public deployerIsNaruto {
+    function testDepositIsSuccess() public deployerIsNaruto registerToken(address(token)) {
         // ensure contract has some balance
         deal(address(token), address(bridger), 1 ether);
         assertEq(token.balanceOf(address(bridger)), 1 ether);
@@ -365,7 +569,7 @@ contract TestMultipliBridger is Test {
         // ensure balance of Minato is 11 ether
         deal(address(token), minatoAddr, 11e18);
         assertEq(token.balanceOf(minatoAddr), 11e18);
-        
+
         
         vm.startPrank(minatoAddr);
         // amount to deposit
@@ -396,8 +600,8 @@ contract TestMultipliBridger is Test {
         // ensure balance of Minato is 11
         deal(minatoAddr, 11 ether);
         assertEq(address(minatoAddr).balance, 11 ether);
-        
-        
+
+    
         vm.startPrank(minatoAddr);
         // amount to deposit
         uint256 amountToDeposit = 10 ether;
@@ -426,7 +630,7 @@ contract TestMultipliBridger is Test {
         // ensure balance of Minato is 11
         deal(minatoAddr, 11 ether);
         assertEq(address(minatoAddr).balance, 11 ether);
-        
+
         
         vm.startPrank(minatoAddr);
         // amount to deposit
