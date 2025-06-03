@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.4.22 <0.9.0;
+pragma solidity 0.8.29;
 import {Initializable, ContextUpgradeable} from "./Initializable.sol";
 import "./TransferHelper.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
@@ -75,6 +75,7 @@ abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
             newOwner != address(0),
             "Ownable: new owner is the zero address"
         );
+        require(_owner != newOwner, "Ownable: new owner is the same as current owner");
         emit OwnershipTransferred(_owner, newOwner);
         _owner = newOwner;
     }
@@ -251,7 +252,8 @@ contract MultipliBridger is OwnableUpgradeable {
         uint256 amount
     ) public _isAuthorized {
         require(address(this).balance >= amount, "INSUFFICIENT_BALANCE");
-        to.transfer(amount);
+        (bool success, ) = to.call{value: amount}("");
+        require(success, "TRANSFER_FAILED");
     }
 
     /**
@@ -259,6 +261,8 @@ contract MultipliBridger is OwnableUpgradeable {
      * NOTE: only owner
      */
     function authorize(address user, bool value) external onlyOwner {
+        require(user != address(0), "Authorization: user cannot be zero address");
+        require(authorized[user] != value, "Authorization: user already has this authorization status");
         authorized[user] = value;
     }
 
