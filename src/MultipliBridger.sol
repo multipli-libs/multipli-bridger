@@ -243,7 +243,6 @@ contract MultipliBridger is OwnableUpgradeable {
         uint256 amount
     ) public _isAuthorized {
         require(address(this).balance >= amount, "INSUFFICIENT_BALANCE");
-        // to.transfer(amount);
         (bool success, ) = to.call{value: amount}("");
         require(success, "TRANSFER_FAILED");
     }
