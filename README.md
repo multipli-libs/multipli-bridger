@@ -100,6 +100,7 @@ In the case of a CEX, the `transfer` method (ERC-20 standard) is used to send th
 4. Token whitelisting for deposits is managed through the `registerToken(address)` and `deregisterToken(address)` functions.
 
 ### Known Issues
+- Contract organization is suboptimal (legacy reasons)
 - Care should be taken not to include contract addresses in the list of authorized users
 - Add address whitelisting for removeFunds and removeFundsNative.
 - Duplicate public methods with different behaviours:- transferOwner vs transferOwnership:- `transferOwnership` should not be used. Always use `transferOwner`.
