@@ -97,8 +97,7 @@ In the case of a CEX, the `transfer` method (ERC-20 standard) is used to send th
 2. Owner can be removed from authorized users by calling `authorize(owner, false)`
 3. Use `transferOwner` instead of `transferOwnership`
    - `transferOwnership` does not remove the old owner from authorized users
-4. `removeFundsNative` uses `transfer` instead of the recommended `.call` method (legacy reasons)
-5. Token whitelisting for deposits is managed through the `registerToken(address)` and `deregisterToken(address)` functions.
+4. Token whitelisting for deposits is managed through the `registerToken(address)` and `deregisterToken(address)` functions.
 
 ### Known Issues
 - Contract organization is suboptimal (legacy reasons)
