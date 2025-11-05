@@ -104,6 +104,11 @@ contract MultipliBridger is OwnableUpgradeable {
         uint256 amount,
         string withdrawalId
     );
+    event FundsAdded(address indexed token, address indexed from, uint256 amount);
+    event FundsAddedNative(address indexed from, uint256 amount);
+    event UserAuthorized(address indexed user, bool value);
+    event FundsRemoved(address indexed token, address indexed to, uint256 amount);
+    event FundsRemovedNative(address indexed to, uint256 amount);
 
     modifier _isAuthorized() {
         require(authorized[msg.sender], "UNAUTHORIZED");
@@ -194,13 +199,16 @@ contract MultipliBridger is OwnableUpgradeable {
             address(this),
             amount
         );
+        emit FundsAdded(token, msg.sender, amount);
     }
 
     /**
      * @dev Deposit native chain currency into the contract address
      * NOTE: Restricted deposit function for rebalancing
      */
-    function addFundsNative() external payable _isAuthorized {}
+    function addFundsNative() external payable _isAuthorized {
+        emit FundsAddedNative(msg.sender, msg.value);
+    }
 
     /**
      * @dev withdraw ERC20 tokens from the contract address
@@ -241,6 +249,7 @@ contract MultipliBridger is OwnableUpgradeable {
         uint256 amount
     ) external _isAuthorized {
         TransferHelper.safeTransfer(token, to, amount);
+        emit FundsRemoved(token, to, amount);
     }
 
     /**
@@ -254,6 +263,7 @@ contract MultipliBridger is OwnableUpgradeable {
         require(address(this).balance >= amount, "INSUFFICIENT_BALANCE");
         (bool success, ) = to.call{value: amount}("");
         require(success, "TRANSFER_FAILED");
+        emit FundsRemovedNative(to, amount);
     }
 
     /**
@@ -264,6 +274,7 @@ contract MultipliBridger is OwnableUpgradeable {
         require(user != address(0), "Authorization: user cannot be zero address");
         require(authorized[user] != value, "Authorization: user already has this authorization status");
         authorized[user] = value;
+        emit UserAuthorized(user, value);
     }
 
     function transferOwner(address newOwner) external onlyOwner {

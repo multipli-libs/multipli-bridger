@@ -83,6 +83,13 @@ contract TestMultipliBridger is Test {
 
     MultipliBridger bridger;
 
+    // Events to match contract events
+    event FundsAdded(address indexed token, address indexed from, uint256 amount);
+    event FundsAddedNative(address indexed from, uint256 amount);
+    event FundsRemoved(address indexed token, address indexed to, uint256 amount);
+    event FundsRemovedNative(address indexed to, uint256 amount);
+    event UserAuthorized(address indexed user, bool value);
+
     modifier deployerIsNaruto () {
         DeployMultipliBridger deployer = new DeployMultipliBridger();
         bridger = deployer.deploy(narutoPrivKey);
@@ -162,7 +169,7 @@ contract TestMultipliBridger is Test {
         bridger.initialize();
         vm.stopPrank();
     }
-
+    
     function testNonOwnerCallingAuthorizeReverts() public deployerIsNaruto {
         vm.startPrank(sasukeAddr);
 
@@ -178,10 +185,18 @@ contract TestMultipliBridger is Test {
         // sanity check to ensure minato is not a authorized user
         assertFalse(bridger.authorized(minatoAddr));
 
+        // Expect the UserAuthorized event to be emitted when authorizing
+        vm.expectEmit(true, false, false, true);
+        emit UserAuthorized(minatoAddr, true);
+        
         // authorize Minato
         bridger.authorize(minatoAddr, true);
         assertTrue(bridger.authorized(minatoAddr));
 
+        // Expect the UserAuthorized event to be emitted when unauthorizing
+        vm.expectEmit(true, false, false, true);
+        emit UserAuthorized(minatoAddr, false);
+        
         // unauthorize Minato
         bridger.authorize(minatoAddr, false);
         assertFalse(bridger.authorized(minatoAddr));
@@ -207,6 +222,10 @@ contract TestMultipliBridger is Test {
     function testAuthorizeRevertsOnDuplicateStatus() public deployerIsNaruto {
         vm.startPrank(narutoAddr);
 
+        // Expect the UserAuthorized event to be emitted
+        vm.expectEmit(true, false, false, true);
+        emit UserAuthorized(minatoAddr, true);
+        
         // First, authorize minato
         bridger.authorize(minatoAddr, true);
         assertTrue(bridger.authorized(minatoAddr));
@@ -215,6 +234,10 @@ contract TestMultipliBridger is Test {
         vm.expectRevert("Authorization: user already has this authorization status");
         bridger.authorize(minatoAddr, true);
 
+        // Expect the UserAuthorized event to be emitted when changing status
+        vm.expectEmit(true, false, false, true);
+        emit UserAuthorized(minatoAddr, false);
+        
         // Now try to unauthorize minato
         bridger.authorize(minatoAddr, false);
         assertFalse(bridger.authorized(minatoAddr));
@@ -224,7 +247,7 @@ contract TestMultipliBridger is Test {
         bridger.authorize(minatoAddr, false);
 
         vm.stopPrank();
-}
+    }
 
     // Note: Depending on whom you ask, this is either a security feature or a bug
     // Owner can be removed from the list of authorized users
@@ -499,6 +522,10 @@ contract TestMultipliBridger is Test {
         // approve spender
         token.approve(address(bridger), amount);
 
+        // Expect the FundsAdded event to be emitted
+        vm.expectEmit(true, true, false, true);
+        emit FundsAdded(address(token), minatoAddr, amount);
+
         // Add funds to the contract
         bridger.addFunds(address(token), amount);
 
@@ -562,9 +589,13 @@ contract TestMultipliBridger is Test {
         uint256 balanceBefore = address(bridger).balance;
         assertEq(balanceBefore, 2 ether); // sanity check
 
-        
+
         // Minato is an authorized user
         vm.startPrank(minatoAddr);
+
+        // Expect the FundsAddedNative event to be emitted
+        vm.expectEmit(true, false, false, true);
+        emit FundsAddedNative(minatoAddr, amount);
 
         // Add funds to the contract
         bridger.addFundsNative{value: amount}();
@@ -749,6 +780,11 @@ contract TestMultipliBridger is Test {
 
         vm.startPrank(minatoAddr);
         uint256 balanceToRemove = 2e18;
+        
+        // Expect the FundsRemoved event to be emitted
+        vm.expectEmit(true, true, false, true);
+        emit FundsRemoved(address(token), minatoAddr, balanceToRemove);
+        
         bridger.removeFunds(address(token), minatoAddr, balanceToRemove);
 
         // verify the balance of the contract after calling `removeFunds`
@@ -850,6 +886,11 @@ contract TestMultipliBridger is Test {
 
         vm.startPrank(minatoAddr);
         uint256 balanceToRemove = 2e18;
+        
+        // Expect the FundsRemovedNative event to be emitted
+        vm.expectEmit(true, false, false, true);
+        emit FundsRemovedNative(sasukeAddr, balanceToRemove);
+        
         // remove funds to Sasuke
         bridger.removeFundsNative(payable(sasukeAddr), balanceToRemove);
 
