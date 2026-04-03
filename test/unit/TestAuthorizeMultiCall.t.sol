@@ -11,7 +11,6 @@ import {MultipliBridger} from "../../src/MultipliBridger.sol";
  * enabling correct behavior with Foundry cheatcodes like vm.startPrank.
  */
 contract TestAuthorizeMultiCall is Test, AuthorizeMultiCall {
-    uint256 internal ownerPrivKey;
     address internal ownerAddr;
 
     MultipliBridger internal bridger;
@@ -19,8 +18,7 @@ contract TestAuthorizeMultiCall is Test, AuthorizeMultiCall {
     address public multiCall = address(0x123);
 
     function setUp() public override {
-        ownerPrivKey = 0x12345;
-        ownerAddr = vm.addr(ownerPrivKey);
+        ownerAddr = makeAddr("owner");
 
         // Deploy bridger with owner
         vm.startPrank(ownerAddr);
@@ -30,20 +28,6 @@ contract TestAuthorizeMultiCall is Test, AuthorizeMultiCall {
 
         // Set required addresses in the script logic (inherited)
         setAddresses(address(bridger), multiCall);
-    }
-
-    /**
-     * @notice Test authorization using private key broadcast simulation.
-     */
-    function test_authorize_with_private_key() public {
-        // Initially not authorized
-        assertFalse(bridger.authorized(multiCall));
-
-        // Execute script run function
-        run(ownerPrivKey);
-
-        // Verify authorization
-        assertTrue(bridger.authorized(multiCall));
     }
 
     /**

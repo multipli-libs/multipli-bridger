@@ -22,17 +22,6 @@ contract DeployMultiCall is Script {
         vm.stopBroadcast();
     }
 
-    /**
-     * @notice Deploy using a specific private key.
-     * @param deployerPrivateKey The private key used for broadcasting.
-     */
-    function run(uint256 deployerPrivateKey) external returns (MultiCall multicall) {
-        address deployer = vm.addr(deployerPrivateKey);
-
-        vm.startBroadcast(deployerPrivateKey);
-        multicall = _deploy(deployer);
-        vm.stopBroadcast();
-    }
 
     /*//////////////////////////////////////////////////////////////
                             INTERNAL LOGIC

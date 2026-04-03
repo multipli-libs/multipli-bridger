@@ -28,15 +28,6 @@ contract AuthorizeMultiCall is Script {
      */
     function setUp() public virtual {}
 
-    /**
-     * @notice Run the authorization script using a specific private key.
-     * @param deployerPrivkey The private key to use for authorization.
-     */
-    function run(uint256 deployerPrivkey) public {
-        vm.startBroadcast(deployerPrivkey);
-        _authorize();
-        vm.stopBroadcast();
-    }
 
     /**
      * @notice Run the authorization script using the default signer.
