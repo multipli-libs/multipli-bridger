@@ -14,14 +14,14 @@ contract TestDeployMultiCall is Test, DeployMultiCall {
 
     /**
      * @notice Test deployment logic using vm.startPrank (compatibility test).
-     * By inheriting from DeployMultiCall, we can call the internal _deploy()
+     * By inheriting from DeployMultiCall, we can call the public deploy()
      * function with a specific owner.
      */
     function test_DeployMultiCallWithPrank() public {
         address prankUser = address(0x456);
         
         vm.startPrank(prankUser);
-        MultiCall multicall = _deploy(prankUser);
+        MultiCall multicall = deploy(prankUser);
         vm.stopPrank();
 
         assertEq(multicall.owner(), prankUser);

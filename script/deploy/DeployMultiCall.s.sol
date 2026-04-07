@@ -18,7 +18,7 @@ contract DeployMultiCall is Script {
      */
     function run() external returns (MultiCall multicall) {
         vm.startBroadcast();
-        multicall = _deploy(msg.sender);
+        multicall = deploy(msg.sender);
         vm.stopBroadcast();
     }
 
@@ -28,10 +28,10 @@ contract DeployMultiCall is Script {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @notice Internal deployment logic.
+     * @notice Deployment logic.
      * @param owner The owner of the deployed MultiCall contract.
      */
-    function _deploy(address owner) internal returns (MultiCall multicall) {
+    function deploy(address owner) public returns (MultiCall multicall) {
         multicall = new MultiCall(owner);
     }
 }
