@@ -23,19 +23,35 @@ contract AuthorizeMultiCall is Script {
         multiCallAddr = _multiCallAddr;
     }
 
+    /*//////////////////////////////////////////////////////////////
+                                MODIFIER
+    //////////////////////////////////////////////////////////////*/
+
+    modifier broadcastOrPrank() {
+        bool testingEnv = vm.envOr("IS_TESTING_ENV", false);
+        if (testingEnv) {
+            vm.startPrank(msg.sender);
+        } else {
+            vm.startBroadcast();
+        }
+        _;
+        if (testingEnv) {
+            vm.stopPrank();
+        } else {
+            vm.stopBroadcast();
+        }
+    }
+
     /**
      * @notice Set up the addresses.
      */
     function setUp() public virtual {}
 
-
     /**
      * @notice Run the authorization script using the default signer.
      */
-    function run() public {
-        vm.startBroadcast();
+    function run() public broadcastOrPrank {
         _authorize();
-        vm.stopBroadcast();
     }
 
     /**
@@ -44,7 +60,7 @@ contract AuthorizeMultiCall is Script {
     function _authorize() public {
         require(bridgerAddr != address(0), "bridgerAddr not set");
         require(multiCallAddr != address(0), "multiCallAddr not set");
-        
+
         MultipliBridger bridger = MultipliBridger(bridgerAddr);
         bridger.authorize(multiCallAddr, true);
     }
