@@ -9,6 +9,7 @@ Multipli is a protocol that allows users to bridge tokens between Ethereum/BSC a
 ### Key Components
 
 - **MultipliBridger Contract**: Contract handling deposits and withdrawals
+- **MultiCall Contract**: A standalone contract for atomic batch execution of transactions (e.g., withdrawals).
 - **StarkEx Infrastructure**: L2 solution where user balances are managed (https://docs.starkware.co/starkex/architecture/solution-architecture.html) - [Github repo](https://github.com/starkware-libs/starkex-contracts)
 - **Off-chain Sequencer**: Manages withdrawal and yield claim IDs
 
@@ -49,6 +50,12 @@ This mechanism ensures users don’t receive duplicate payouts in case the off-c
 - If not: funds are transferred to the user.
 - If yes: the method reverts.  
 This mechanism ensures users don’t receive duplicate payouts in case the off-chain worker calls `withdraw` more than once with the same ID.
+
+### Batch Execution (MultiCall)
+1. To optimize gas and maintain atomicity, multiple withdrawals can be batched using the **MultiCall** contract.
+2. The `aggregate(Call[] calldata calls)` function allows the owner to execute multiple `withdraw` or `withdrawNative` calls in a single transaction.
+3. If any call in the batch fails, the entire transaction reverts, ensuring no partial state changes.
+4. **Important**: The `MultiCall` contract address must be authorized in the `MultipliBridger` contract before it can perform withdrawals.
 
 ### Yield Claim and Sell Schedule
 
@@ -140,11 +147,25 @@ forge script ./script/deploy/DeployMultipliBridger.s.sol:DeployMultipliBridger -
 forge script ./script/deploy/DeployMultipliBridger.s.sol:DeployMultipliBridger --rpc-url eth_mainnet --account prod-deployer --sender <address> --broadcast -vvvv
 ```
 
+#### Deploying MultiCall
+```bash
+forge script ./script/deploy/DeployMultiCall.s.sol:DeployMultiCall --rpc-url <network> --account <account_name> --sender <sender_address> --broadcast -vvvv
+```
+
+### Maintenance
+
+#### Authorize MultiCall
+After deploying the MultiCall contract, it must be authorized in the Bridger contract:
+1. Update `bridgerAddr` and `multiCallAddr` in `script/maintenance/AuthorizeMultiCall.s.sol`.
+2. Run the script:
+```bash
+forge script ./script/maintenance/AuthorizeMultiCall.s.sol:AuthorizeMultiCall --rpc-url <network> --account <account_name> --sender <sender_address> --broadcast -vvvv
+```
+
 ## Future Improvements
 - A new contract version is planned to address current organizational issues and add features
 - Improved permission model: Currently, authorized users can withdraw funds to any address. There are off-chain scripts in place that automatically sweep funds from the contract to OES providers or exchanges once a certain balance threshold is reached. This ensures that the contract never holds a large amount of funds at any given time.
-- Support bulk withdrawals
-- Add whitelisting for recipient of `removeFunds` so funds can be transferred to pre-defined addresses/contracts. 
+- Add whitelisting for recipient of `removeFunds` so funds can be transferred to pre-defined addresses/contracts.
 
 ## Contact Information
 support@multipli.fi
