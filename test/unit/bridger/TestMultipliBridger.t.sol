@@ -6,8 +6,8 @@ pragma solidity >=0.4.22 <0.9.0;
 
 import {Test, stdStorage, StdStorage, console} from "forge-std/Test.sol";
 
-import {MultipliBridger} from "../../src/MultipliBridger.sol";
-import {DeployMultipliBridger} from "../../script/deploy/DeployMultipliBridger.s.sol";
+import {MultipliBridger} from "../../../src/MultipliBridger.sol";
+import {DeployMultipliBridger} from "../../../script/deploy/DeployMultipliBridger.s.sol";
 
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
