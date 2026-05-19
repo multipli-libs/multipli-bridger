@@ -11,7 +11,7 @@ contract BSCTransferOwnerTest is BSCBaseTest {
     MultipliBridger bridger;
 
     function getBlockNumber() public pure override returns (uint256) {
-        return 50_000_000;
+        return 99_137_010;
     }
 
     function setUp() public override {

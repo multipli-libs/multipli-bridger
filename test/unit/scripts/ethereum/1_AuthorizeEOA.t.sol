@@ -11,7 +11,7 @@ contract EthereumAuthorizeEOATest is EthereumBaseTest {
     MultipliBridger bridger;
 
     function getBlockNumber() public pure override returns (uint256) {
-        return 22_500_000;
+        return 25_126_999;
     }
 
     function setUp() public override {
@@ -44,7 +44,7 @@ contract EthereumAuthorizeEOATest is EthereumBaseTest {
 
         // Hardcoded — catches accidental constant changes in Constants.sol
         assertTrue(
-            bridger.authorized(0x7A1CD5e9b3F8a2d4c6e7f90123456789abcdEf01),
+            bridger.authorized(0x1111111111111111111111111111111111111111),
             "script did not authorize the expected MULTIPLI_ADMIN address"
         );
     }

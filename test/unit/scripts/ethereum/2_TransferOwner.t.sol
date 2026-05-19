@@ -11,7 +11,7 @@ contract EthereumTransferOwnerTest is EthereumBaseTest {
     MultipliBridger bridger;
 
     function getBlockNumber() public pure override returns (uint256) {
-        return 22_500_000;
+        return 25_126_999;
     }
 
     function setUp() public override {

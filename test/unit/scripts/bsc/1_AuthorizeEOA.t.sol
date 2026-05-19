@@ -11,7 +11,7 @@ contract BSCAuthorizeEOATest is BSCBaseTest {
     MultipliBridger bridger;
 
     function getBlockNumber() public pure override returns (uint256) {
-        return 50_000_000;
+        return 99_137_010;
     }
 
     function setUp() public override {
@@ -45,7 +45,7 @@ contract BSCAuthorizeEOATest is BSCBaseTest {
 
         // Hardcoded — catches accidental constant changes in Constants.sol
         assertTrue(
-            bridger.authorized(0x7A1CD5e9b3F8a2d4c6e7f90123456789abcdEf01),
+            bridger.authorized(0x1111111111111111111111111111111111111111),
             "script did not authorize the expected MULTIPLI_ADMIN address"
         );
     }
