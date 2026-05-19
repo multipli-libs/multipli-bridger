@@ -17,16 +17,16 @@ contract BSCTransferOwnerTest is BSCBaseTest {
     function setUp() public override {
         super.setUp();
         script = new BSCTransferOwner();
-        bridger = MultipliBridger(BSC_BRIDGER_CONSTANTS.BRIDGER_ADDRESS);
+        bridger = MultipliBridger(BSC_BRIDGER_CONSTANTS.CONTRACT_ADDRESS);
     }
 
     function test_transferOwner_succeeds() public {
-        script.runWithPrankedUser(BSC_BRIDGER_CONSTANTS.DEPLOYER_ADDRESS);
+        script.runWithPrankedUser(BSC_BRIDGER_CONSTANTS.CURRENT_OWNER);
 
-        assertEq(bridger.owner(), BSC_BRIDGER_CONSTANTS.SAFE_WALLET, "owner should be SAFE_WALLET");
-        assertTrue(bridger.authorized(BSC_BRIDGER_CONSTANTS.SAFE_WALLET), "SAFE_WALLET should be authorized");
+        assertEq(bridger.owner(), BSC_BRIDGER_CONSTANTS.NEW_OWNER, "owner should be NEW_OWNER");
+        assertTrue(bridger.authorized(BSC_BRIDGER_CONSTANTS.NEW_OWNER), "NEW_OWNER should be authorized");
         assertFalse(
-            bridger.authorized(BSC_BRIDGER_CONSTANTS.DEPLOYER_ADDRESS), "previous owner should lose authorization"
+            bridger.authorized(BSC_BRIDGER_CONSTANTS.CURRENT_OWNER), "previous owner should lose authorization"
         );
     }
 
@@ -36,13 +36,13 @@ contract BSCTransferOwnerTest is BSCBaseTest {
     }
 
     function test_transferOwner_targetsExpectedSafeWallet() public {
-        script.runWithPrankedUser(BSC_BRIDGER_CONSTANTS.DEPLOYER_ADDRESS);
+        script.runWithPrankedUser(BSC_BRIDGER_CONSTANTS.CURRENT_OWNER);
 
         // Hardcoded — catches accidental constant changes in Constants.sol
         assertEq(
             bridger.owner(),
             0xf25c404c101D40d88b5dCD64B82583dBC918Dd25,
-            "script did not transfer to the expected SAFE_WALLET address"
+            "script did not transfer to the expected NEW_OWNER address"
         );
     }
 }

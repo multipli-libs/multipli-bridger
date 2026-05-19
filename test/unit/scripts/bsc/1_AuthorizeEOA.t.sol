@@ -17,13 +17,13 @@ contract BSCAuthorizeEOATest is BSCBaseTest {
     function setUp() public override {
         super.setUp();
         script = new BSCAuthorizeEOA();
-        bridger = MultipliBridger(BSC_BRIDGER_CONSTANTS.BRIDGER_ADDRESS);
+        bridger = MultipliBridger(BSC_BRIDGER_CONSTANTS.CONTRACT_ADDRESS);
     }
 
     function test_authorizeEOA_succeeds() public {
-        script.runWithPrankedUser(BSC_BRIDGER_CONSTANTS.DEPLOYER_ADDRESS);
+        script.runWithPrankedUser(BSC_BRIDGER_CONSTANTS.CURRENT_OWNER);
 
-        assertTrue(bridger.authorized(BSC_BRIDGER_CONSTANTS.MULTIPLI_ADMIN), "MULTIPLI_ADMIN should be authorized");
+        assertTrue(bridger.authorized(BSC_BRIDGER_CONSTANTS.AUTHORIZED_SIGNER), "AUTHORIZED_SIGNER should be authorized");
     }
 
     function test_authorizeEOA_revertsIfCalledByNonOwner() public {
@@ -34,19 +34,19 @@ contract BSCAuthorizeEOATest is BSCBaseTest {
 
     // This test will fail since we haven’t deployed the updated version to production yet. The recent update includes protection against gas fee reverts and duplicate setter calls for the authorized list.
     // function test_authorizeEOA_revertsIfAlreadyAuthorized() public {
-    //     script.runWithPrankedUser(BSC_BRIDGER_CONSTANTS.DEPLOYER_ADDRESS);
+    //     script.runWithPrankedUser(BSC_BRIDGER_CONSTANTS.CURRENT_OWNER);
 
     //     vm.expectRevert("Authorization: user already has this authorization status");
-    //     script.runWithPrankedUser(BSC_BRIDGER_CONSTANTS.DEPLOYER_ADDRESS);
+    //     script.runWithPrankedUser(BSC_BRIDGER_CONSTANTS.CURRENT_OWNER);
     // }
 
     function test_authorizeEOA_targetsExpectedAddress() public {
-        script.runWithPrankedUser(BSC_BRIDGER_CONSTANTS.DEPLOYER_ADDRESS);
+        script.runWithPrankedUser(BSC_BRIDGER_CONSTANTS.CURRENT_OWNER);
 
         // Hardcoded — catches accidental constant changes in Constants.sol
         assertTrue(
             bridger.authorized(0x1111111111111111111111111111111111111111),
-            "script did not authorize the expected MULTIPLI_ADMIN address"
+            "script did not authorize the expected AUTHORIZED_SIGNER address"
         );
     }
 }

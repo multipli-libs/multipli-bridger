@@ -17,16 +17,16 @@ contract EthereumTransferOwnerTest is EthereumBaseTest {
     function setUp() public override {
         super.setUp();
         script = new EthereumTransferOwner();
-        bridger = MultipliBridger(ETHEREUM_BRIDGER_CONSTANTS.BRIDGER_ADDRESS);
+        bridger = MultipliBridger(ETHEREUM_BRIDGER_CONSTANTS.CONTRACT_ADDRESS);
     }
 
     function test_transferOwner_succeeds() public {
-        script.runWithPrankedUser(ETHEREUM_BRIDGER_CONSTANTS.DEPLOYER_ADDRESS);
+        script.runWithPrankedUser(ETHEREUM_BRIDGER_CONSTANTS.CURRENT_OWNER);
 
-        assertEq(bridger.owner(), ETHEREUM_BRIDGER_CONSTANTS.SAFE_WALLET, "owner should be SAFE_WALLET");
-        assertTrue(bridger.authorized(ETHEREUM_BRIDGER_CONSTANTS.SAFE_WALLET), "SAFE_WALLET should be authorized");
+        assertEq(bridger.owner(), ETHEREUM_BRIDGER_CONSTANTS.NEW_OWNER, "owner should be NEW_OWNER");
+        assertTrue(bridger.authorized(ETHEREUM_BRIDGER_CONSTANTS.NEW_OWNER), "NEW_OWNER should be authorized");
         assertFalse(
-            bridger.authorized(ETHEREUM_BRIDGER_CONSTANTS.DEPLOYER_ADDRESS), "previous owner should lose authorization"
+            bridger.authorized(ETHEREUM_BRIDGER_CONSTANTS.CURRENT_OWNER), "previous owner should lose authorization"
         );
     }
 
@@ -36,13 +36,13 @@ contract EthereumTransferOwnerTest is EthereumBaseTest {
     }
 
     function test_transferOwner_targetsExpectedSafeWallet() public {
-        script.runWithPrankedUser(ETHEREUM_BRIDGER_CONSTANTS.DEPLOYER_ADDRESS);
+        script.runWithPrankedUser(ETHEREUM_BRIDGER_CONSTANTS.CURRENT_OWNER);
 
         // Hardcoded — catches accidental constant changes in Constants.sol
         assertEq(
             bridger.owner(),
             0xf25c404c101D40d88b5dCD64B82583dBC918Dd25,
-            "script did not transfer to the expected SAFE_WALLET address"
+            "script did not transfer to the expected NEW_OWNER address"
         );
     }
 }

@@ -5,18 +5,17 @@ import {Base} from "../common/Base.s.sol";
 import {ETHEREUM_BRIDGER_CONSTANTS} from "../common/Constants.sol";
 import {MultipliBridger} from "../../../src/MultipliBridger.sol";
 
-/// @notice Step 1 of 2 — Authorize MULTIPLI_ADMIN on the Ethereum bridger.
+/// @notice Step 1 of 2 — Authorize AUTHORIZED_SIGNER on the Ethereum bridger.
 /// @dev    Must be executed BEFORE 2_TransferOwner.s.sol so the admin retains
 ///         authorized access after ownership moves to the Safe.
 ///
 /// Pre-conditions:
-///   - Signer is the current owner of ETHEREUM_BRIDGER_CONSTANTS.BRIDGER_ADDRESS
-///   - MULTIPLI_ADMIN is not yet authorized (will revert if already set)
+///   - Signer is the current owner of ETHEREUM_BRIDGER_CONSTANTS.CONTRACT_ADDRESS
 
 contract EthereumAuthorizeEOA is Base {
     function _run() internal override {
-        MultipliBridger(ETHEREUM_BRIDGER_CONSTANTS.BRIDGER_ADDRESS)
-            .authorize(ETHEREUM_BRIDGER_CONSTANTS.MULTIPLI_ADMIN, true);
+        MultipliBridger(ETHEREUM_BRIDGER_CONSTANTS.CONTRACT_ADDRESS)
+            .authorize(ETHEREUM_BRIDGER_CONSTANTS.AUTHORIZED_SIGNER, true);
     }
 }
 
