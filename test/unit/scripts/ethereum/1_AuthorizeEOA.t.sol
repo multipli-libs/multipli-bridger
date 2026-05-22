@@ -44,7 +44,7 @@ contract EthereumAuthorizeEOATest is EthereumBaseTest {
 
         // Hardcoded — catches accidental constant changes in Constants.sol
         assertTrue(
-            bridger.authorized(0x1111111111111111111111111111111111111111),
+            bridger.authorized(0x71E1f7f566Fbfc4D46636046459699c5EDB00382),
             "script did not authorize the expected AUTHORIZED_SIGNER address"
         );
     }

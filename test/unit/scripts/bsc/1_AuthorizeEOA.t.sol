@@ -11,7 +11,7 @@ contract BSCAuthorizeEOATest is BSCBaseTest {
     MultipliBridger bridger;
 
     function getBlockNumber() public pure override returns (uint256) {
-        return 99_137_010;
+        return 99_726_954;
     }
 
     function setUp() public override {
@@ -45,7 +45,7 @@ contract BSCAuthorizeEOATest is BSCBaseTest {
 
         // Hardcoded — catches accidental constant changes in Constants.sol
         assertTrue(
-            bridger.authorized(0x1111111111111111111111111111111111111111),
+            bridger.authorized(0x71E1f7f566Fbfc4D46636046459699c5EDB00382),
             "script did not authorize the expected AUTHORIZED_SIGNER address"
         );
     }
