@@ -17,8 +17,7 @@ import {MultipliBridger} from "../../../src/MultipliBridger.sol";
 
 contract EthereumTransferOwner is Base {
     function _run() internal override {
-        MultipliBridger(ETHEREUM_BRIDGER_CONSTANTS.CONTRACT_ADDRESS)
-            .transferOwner(ETHEREUM_BRIDGER_CONSTANTS.NEW_OWNER);
+        MultipliBridger(ETHEREUM_BRIDGER_CONSTANTS.CONTRACT_ADDRESS).transferOwner(ETHEREUM_BRIDGER_CONSTANTS.NEW_OWNER);
     }
 }
 
@@ -27,3 +26,13 @@ contract EthereumTransferOwner is Base {
 ///   2. forge script ./script/maintenance/ethereum/2_TransferOwner.s.sol:EthereumTransferOwner \
 ///        --rpc-url eth_mainnet --account prod-deployer -vvvv \
 ///        --sender 0x151799d9072b0Ca939550906E7E79506bF4BeeE3 --broadcast
+
+// ##### mainnet
+// ✅  [Success] Hash: 0xdeabf4833f11443e489b83b2327180954b021ca12523386d2e513eb2b3975d05
+// Function: transferOwner(address)
+// Block: 25157503
+// Paid: 0.000004747764052944 ETH (51528 gas * 0.092139498 gwei)
+
+// ✅ Sequence #1 on mainnet | Total Paid: 0.000004747764052944 ETH (51528 gas * avg 0.092139498 gwei)
+
+// ==========================

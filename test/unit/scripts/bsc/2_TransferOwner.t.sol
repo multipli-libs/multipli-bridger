@@ -25,9 +25,7 @@ contract BSCTransferOwnerTest is BSCBaseTest {
 
         assertEq(bridger.owner(), BSC_BRIDGER_CONSTANTS.NEW_OWNER, "owner should be NEW_OWNER");
         assertTrue(bridger.authorized(BSC_BRIDGER_CONSTANTS.NEW_OWNER), "NEW_OWNER should be authorized");
-        assertFalse(
-            bridger.authorized(BSC_BRIDGER_CONSTANTS.CURRENT_OWNER), "previous owner should lose authorization"
-        );
+        assertFalse(bridger.authorized(BSC_BRIDGER_CONSTANTS.CURRENT_OWNER), "previous owner should lose authorization");
     }
 
     function test_transferOwner_revertsIfCalledByNonOwner() public {

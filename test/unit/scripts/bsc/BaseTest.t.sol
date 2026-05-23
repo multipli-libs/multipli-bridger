@@ -8,7 +8,8 @@ abstract contract BSCBaseTest is Test {
 
     function setUp() public virtual {
         vm.createSelectFork({
-            blockNumber: getBlockNumber(), urlOrAlias: vm.envOr("BNB_MAINNET_RPC_URL", string("https://rpc.ankr.com/bsc"))
+            blockNumber: getBlockNumber(),
+            urlOrAlias: vm.envOr("BNB_MAINNET_RPC_URL", string("https://rpc.ankr.com/bsc"))
         });
     }
 }

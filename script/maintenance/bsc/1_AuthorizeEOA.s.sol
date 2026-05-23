@@ -18,8 +18,18 @@ contract BSCAuthorizeEOA is Base {
     }
 }
 
-/// Steps:
-///   1. forge clean && forge build
-///   2. forge script ./script/maintenance/bsc/1_AuthorizeEOA.s.sol:BSCAuthorizeEOA \
-///        --rpc-url bnb_mainnet --account prod-deployer -vvvv \
-///        --sender 0xC1Bf45D87a968E8720DAdf9226B89991A5562832 --broadcast
+// Steps:
+//   1. forge clean && forge build
+//   2. forge script ./script/maintenance/bsc/1_AuthorizeEOA.s.sol:BSCAuthorizeEOA \
+//        --rpc-url bnb_mainnet --account prod-deployer -vvvv \
+//        --sender 0xC1Bf45D87a968E8720DAdf9226B89991A5562832 --broadcast
+
+// ##### bsc
+// ✅  [Success] Hash: 0xc1ec99f8419ce23e4cac7f9a76aec198a12d52266bf28c0de9a31353c45658bf
+// Function: authorize(address,bool)
+// Block: 99951839
+// Paid: 0.00000231875 BNB (46375 gas * 0.05 gwei)
+
+// ✅ Sequence #1 on bsc | Total Paid: 0.00000231875 BNB (46375 gas * avg 0.05 gwei)
+
+// ==========================

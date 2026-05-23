@@ -8,7 +8,8 @@ abstract contract EthereumBaseTest is Test {
 
     function setUp() public virtual {
         vm.createSelectFork({
-            blockNumber: getBlockNumber(), urlOrAlias: vm.envOr("ETHEREUM_MAINNET_RPC_URL", string("https://rpc.ankr.com/eth"))
+            blockNumber: getBlockNumber(),
+            urlOrAlias: vm.envOr("ETHEREUM_MAINNET_RPC_URL", string("https://rpc.ankr.com/eth"))
         });
     }
 }

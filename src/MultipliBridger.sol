@@ -20,10 +20,7 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
     address private _owner;
 
-    event OwnershipTransferred(
-        address indexed previousOwner,
-        address indexed newOwner
-    );
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     /**
      * @dev Initializes the contract setting the deployer as the initial owner.
@@ -71,10 +68,7 @@ abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
      * Can only be called by the current owner.
      */
     function transferOwnership(address newOwner) public virtual onlyOwner {
-        require(
-            newOwner != address(0),
-            "Ownable: new owner is the zero address"
-        );
+        require(newOwner != address(0), "Ownable: new owner is the zero address");
         require(_owner != newOwner, "Ownable: new owner is the same as current owner");
         emit OwnershipTransferred(_owner, newOwner);
         _owner = newOwner;
@@ -90,20 +84,11 @@ contract MultipliBridger is OwnableUpgradeable {
     mapping(address => bool) public authorized;
     mapping(string => bool) public processedWithdrawalIds;
     mapping(address => bool) public registeredTokens;
-    
+
     event TokenRegistered(address indexed token, address indexed by);
     event TokenDeregistered(address indexed token, address indexed by);
-    event BridgedDeposit(
-        address indexed user,
-        address indexed token,
-        uint256 amount
-    );
-    event BridgedWithdrawal(
-        address indexed user,
-        address indexed token,
-        uint256 amount,
-        string withdrawalId
-    );
+    event BridgedDeposit(address indexed user, address indexed token, uint256 amount);
+    event BridgedWithdrawal(address indexed user, address indexed token, uint256 amount, string withdrawalId);
 
     modifier _isAuthorized() {
         require(authorized[msg.sender], "UNAUTHORIZED");
@@ -112,13 +97,10 @@ contract MultipliBridger is OwnableUpgradeable {
 
     modifier _validateWithdrawalId(string calldata withdrawalId) {
         require(bytes(withdrawalId).length > 0, "Withdrawal ID is required");
-        require(
-            !processedWithdrawalIds[withdrawalId],
-            "Withdrawal ID Already processed"
-        );
+        require(!processedWithdrawalIds[withdrawalId], "Withdrawal ID Already processed");
         _;
     }
-    
+
     modifier _isRegisteredToken(address token) {
         require(registeredTokens[token], "Token is not registered");
         _;
@@ -136,21 +118,21 @@ contract MultipliBridger is OwnableUpgradeable {
     function registerToken(address token) external _isAuthorized {
         require(token != address(0), "Cannot register zero address as token");
         require(!registeredTokens[token], "Token already registered");
-        
+
         registeredTokens[token] = true;
-        
+
         emit TokenRegistered(token, msg.sender);
     }
-    
+
     /**
      * @dev Unregister a token
      * NOTE: only owner or authorized users can unregister tokens
      */
     function deregisterToken(address token) external _isAuthorized {
         require(registeredTokens[token], "Token not registered");
-        
+
         registeredTokens[token] = false;
-        
+
         emit TokenDeregistered(token, msg.sender);
     }
 
@@ -162,12 +144,7 @@ contract MultipliBridger is OwnableUpgradeable {
         // Store balance before transfer
         uint256 balanceBefore = IERC20(token).balanceOf(address(this));
 
-        TransferHelper.safeTransferFrom(
-            token,
-            msg.sender,
-            address(this),
-            amount
-        );
+        TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount);
 
         // Calculate actual amount received (accounts for fee-on-transfer tokens)
         uint256 balanceAfter = IERC20(token).balanceOf(address(this));
@@ -188,12 +165,7 @@ contract MultipliBridger is OwnableUpgradeable {
      * NOTE: Restricted deposit function for rebalancing
      */
     function addFunds(address token, uint256 amount) external _isAuthorized {
-        TransferHelper.safeTransferFrom(
-            token,
-            msg.sender,
-            address(this),
-            amount
-        );
+        TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount);
     }
 
     /**
@@ -206,12 +178,11 @@ contract MultipliBridger is OwnableUpgradeable {
      * @dev withdraw ERC20 tokens from the contract address
      * NOTE: only for authorized users
      */
-    function withdraw(
-        address token,
-        address to,
-        uint256 amount,
-        string calldata withdrawalId
-    ) external _isAuthorized _validateWithdrawalId(withdrawalId) {
+    function withdraw(address token, address to, uint256 amount, string calldata withdrawalId)
+        external
+        _isAuthorized
+        _validateWithdrawalId(withdrawalId)
+    {
         processedWithdrawalIds[withdrawalId] = true;
         TransferHelper.safeTransfer(token, to, amount);
         emit BridgedWithdrawal(to, token, amount, withdrawalId);
@@ -221,11 +192,11 @@ contract MultipliBridger is OwnableUpgradeable {
      * @dev withdraw native chain currency from the contract address
      * NOTE: only for authorized users
      */
-    function withdrawNative(
-        address payable to,
-        uint256 amount,
-        string calldata withdrawalId
-    ) external _isAuthorized _validateWithdrawalId(withdrawalId) {
+    function withdrawNative(address payable to, uint256 amount, string calldata withdrawalId)
+        external
+        _isAuthorized
+        _validateWithdrawalId(withdrawalId)
+    {
         processedWithdrawalIds[withdrawalId] = true;
         removeFundsNative(to, amount);
         emit BridgedWithdrawal(to, address(0), amount, withdrawalId);
@@ -235,11 +206,7 @@ contract MultipliBridger is OwnableUpgradeable {
      * @dev withdraw ERC20 token from the contract address
      * NOTE: only for authorized users for rebalancing
      */
-    function removeFunds(
-        address token,
-        address to,
-        uint256 amount
-    ) external _isAuthorized {
+    function removeFunds(address token, address to, uint256 amount) external _isAuthorized {
         TransferHelper.safeTransfer(token, to, amount);
     }
 
@@ -247,12 +214,9 @@ contract MultipliBridger is OwnableUpgradeable {
      * @dev withdraw native chain currency from the contract address
      * NOTE: only for authorized users for rebalancing
      */
-    function removeFundsNative(
-        address payable to,
-        uint256 amount
-    ) public _isAuthorized {
+    function removeFundsNative(address payable to, uint256 amount) public _isAuthorized {
         require(address(this).balance >= amount, "INSUFFICIENT_BALANCE");
-        (bool success, ) = to.call{value: amount}("");
+        (bool success,) = to.call{value: amount}("");
         require(success, "TRANSFER_FAILED");
     }
 

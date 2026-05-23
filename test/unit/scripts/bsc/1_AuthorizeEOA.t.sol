@@ -23,14 +23,15 @@ contract BSCAuthorizeEOATest is BSCBaseTest {
     function test_authorizeEOA_succeeds() public {
         script.runWithPrankedUser(BSC_BRIDGER_CONSTANTS.CURRENT_OWNER);
 
-        assertTrue(bridger.authorized(BSC_BRIDGER_CONSTANTS.AUTHORIZED_SIGNER), "AUTHORIZED_SIGNER should be authorized");
+        assertTrue(
+            bridger.authorized(BSC_BRIDGER_CONSTANTS.AUTHORIZED_SIGNER), "AUTHORIZED_SIGNER should be authorized"
+        );
     }
 
     function test_authorizeEOA_revertsIfCalledByNonOwner() public {
         vm.expectRevert("Ownable: caller is not the owner");
         script.runWithPrankedUser(makeAddr("stranger"));
     }
-
 
     // This test will fail since we haven’t deployed the updated version to production yet. The recent update includes protection against gas fee reverts and duplicate setter calls for the authorized list.
     // function test_authorizeEOA_revertsIfAlreadyAuthorized() public {

@@ -23,7 +23,9 @@ contract EthereumAuthorizeEOATest is EthereumBaseTest {
     function test_authorizeEOA_succeeds() public {
         script.runWithPrankedUser(ETHEREUM_BRIDGER_CONSTANTS.CURRENT_OWNER);
 
-        assertTrue(bridger.authorized(ETHEREUM_BRIDGER_CONSTANTS.AUTHORIZED_SIGNER), "AUTHORIZED_SIGNER should be authorized");
+        assertTrue(
+            bridger.authorized(ETHEREUM_BRIDGER_CONSTANTS.AUTHORIZED_SIGNER), "AUTHORIZED_SIGNER should be authorized"
+        );
     }
 
     function test_authorizeEOA_revertsIfCalledByNonOwner() public {

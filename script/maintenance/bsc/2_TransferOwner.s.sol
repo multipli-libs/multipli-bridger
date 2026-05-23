@@ -26,3 +26,13 @@ contract BSCTransferOwner is Base {
 ///   2. forge script ./script/maintenance/bsc/2_TransferOwner.s.sol:BSCTransferOwner \
 ///        --rpc-url bnb_mainnet --account prod-deployer -vvvv \
 ///        --sender 0xC1Bf45D87a968E8720DAdf9226B89991A5562832 --broadcast
+
+// ##### bsc
+// ✅  [Success] Hash: 0xd4c71f07c112a1cb301c9d27681fae9371d77a33eb5ba96609929b4b8ba08dae
+// Function: transferOwner(address)
+// Block: 99952067
+// Paid: 0.0000025764 BNB (51528 gas * 0.05 gwei)
+
+// ✅ Sequence #1 on bsc | Total Paid: 0.0000025764 BNB (51528 gas * avg 0.05 gwei)
+
+// ==========================

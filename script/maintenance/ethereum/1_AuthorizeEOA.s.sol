@@ -24,3 +24,13 @@ contract EthereumAuthorizeEOA is Base {
 ///   2. forge script ./script/maintenance/ethereum/1_AuthorizeEOA.s.sol:EthereumAuthorizeEOA \
 ///        --rpc-url eth_mainnet --account prod-deployer -vvvv \
 ///        --sender 0x151799d9072b0Ca939550906E7E79506bF4BeeE3 --broadcast
+
+// ##### mainnet
+// ✅  [Success] Hash: 0xb2b3a268099410b0821a162e70a07c8098fad4877d386b130efcef56ed5ea813
+// Function: authorize(address,bool)
+// Block: 25157491
+// Paid: 0.000004985340835125 ETH (46375 gas * 0.107500611 gwei)
+
+// ✅ Sequence #1 on mainnet | Total Paid: 0.000004985340835125 ETH (46375 gas * avg 0.107500611 gwei)
+
+// ==========================
