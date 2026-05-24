@@ -21,7 +21,7 @@ contract DeployMultipliBridger is Script {
     /// @dev Primarily used for testing with generated addresses
     /// @param deployerPrivkey The private key to use for deployment
     /// @return bridger The deployed MultipliBridger instance
-    function deploy(uint256 deployerPrivkey) public returns(MultipliBridger) {
+    function deploy(uint256 deployerPrivkey) public returns (MultipliBridger) {
         vm.startBroadcast(deployerPrivkey);
         MultipliBridger bridger = new MultipliBridger();
         bridger.initialize();
@@ -33,7 +33,7 @@ contract DeployMultipliBridger is Script {
     /// @notice Deploy MultipliBridger with default signer
     /// @dev Uses the default signer from vm context
     /// @return bridger The deployed MultipliBridger instance
-    function deploy() public returns(MultipliBridger) {
+    function deploy() public returns (MultipliBridger) {
         vm.startBroadcast();
         MultipliBridger bridger = new MultipliBridger();
         bridger.initialize();
@@ -41,5 +41,4 @@ contract DeployMultipliBridger is Script {
 
         return bridger;
     }
-
 }
