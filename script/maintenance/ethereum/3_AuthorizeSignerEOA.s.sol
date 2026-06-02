@@ -62,6 +62,7 @@ contract EthereumAuthorizeSignerEOA is Base {
 ///   2. forge script ./script/maintenance/ethereum/3_AuthorizeSignerEOA.s.sol:EthereumAuthorizeSignerEOA \
 ///        --rpc-url eth_mainnet -vvvv
 
+// Initiate from: 0xf25c404c101D40d88b5dCD64B82583dBC918Dd25 (Owner wallet)
 // Calldata for Safe transactions (copy and paste into the Safe UI):
 // == Logs ==
 //  === Safe Tx 1: Revoke old signer ===
