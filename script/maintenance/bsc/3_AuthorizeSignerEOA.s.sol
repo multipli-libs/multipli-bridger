@@ -61,3 +61,14 @@ contract BSCAuthorizeSignerEOA is Base {
 ///   1. forge clean && forge build
 ///   2. forge script ./script/maintenance/bsc/3_AuthorizeSignerEOA.s.sol:BSCAuthorizeSignerEOA \
 ///        --rpc-url bnb_mainnet -vvvv
+
+// Calldata for Safe transactions (copy and paste into Safe UI):
+// == Logs ==
+//  === Safe Tx 1: Revoke old signer ===
+//  Target  : 0xd0ec30e908D16f581417C54be3c6Ff3189AbD259
+//  Calldata:
+//  0x2d1fb38900000000000000000000000071e1f7f566fbfc4d46636046459699c5edb003820000000000000000000000000000000000000000000000000000000000000000
+//  === Safe Tx 2: Grant new signer ===
+//  Target  : 0xd0ec30e908D16f581417C54be3c6Ff3189AbD259
+//  Calldata:
+//  0x2d1fb3890000000000000000000000006c29adb2364b8ebe75cbc15ad7d98bd706c733090000000000000000000000000000000000000000000000000000000000000001
