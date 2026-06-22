@@ -107,6 +107,25 @@ In the case of a CEX, the `transfer` method (ERC-20 standard) is used to send th
 
 ## Development & Testing
 
+### Setup
+This repository includes a setup helper at `bash_helpers/setup.sh`.
+
+Prerequisites:
+- [nvm](https://github.com/nvm-sh/nvm) with the Node.js version from `.nvmrc`
+- [Foundry](https://book.getfoundry.sh/getting-started/installation)
+
+Run the setup script:
+```bash
+npm run setup
+```
+
+The script:
+1. Loads `nvm`
+2. Uses the Node.js version defined in `.nvmrc`
+3. Installs Foundry dependencies with `forge install`
+4. Installs Node.js dependencies with `npm install`
+5. Creates `.env` from `.env.example` if `.env` does not already exist
+
 ### Running Tests
 ```bash
 forge test -vvvv

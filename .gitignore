@@ -25,9 +25,7 @@ broadcast/
 
 # Ignore Node.js dependencies (if using Hardhat, JS scripts, or CI/CD tools)
 node_modules/
-package-lock.json
 pnpm-lock.yaml
-yarn.lock
 
 # Ignore VSCode settings
 .vscode/

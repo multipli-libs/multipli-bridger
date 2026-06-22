@@ -1,0 +1,14 @@
+{
+  "name": "multipli-bridger",
+  "engines": {
+    "node": "24.16.0",
+    "npm": ">=11.10.0",
+    "yarn": ">=4.12.0"
+  },
+  "scripts": {
+    "setup": "bash bash_helpers/setup.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
