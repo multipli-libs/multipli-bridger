@@ -89,6 +89,20 @@ contract MultipliBridger is OwnableUpgradeable {
     event TokenDeregistered(address indexed token, address indexed by);
     event BridgedDeposit(address indexed user, address indexed token, uint256 amount);
     event BridgedWithdrawal(address indexed user, address indexed token, uint256 amount, string withdrawalId);
+    event FundsRemoved(address indexed token, address indexed to, uint256 amount);
+    event FundsRemovedNative(address indexed to, uint256 amount);
+    event FundsAdded(address indexed token, uint256 amount);
+    event FundsAddedNative(uint256 amount);
+
+    /**
+     * @dev Initialize the contract within the deployment transaction.
+     * Initializing here (instead of via a separate `initialize()` call)
+     * closes the front-running window in which an attacker could take over
+     * the contract between its creation and its initialization.
+     */
+    constructor() initializer {
+        initialize();
+    }
 
     modifier _isAuthorized() {
         require(authorized[msg.sender], "UNAUTHORIZED");
@@ -157,6 +171,7 @@ contract MultipliBridger is OwnableUpgradeable {
      * @dev Deposit native chain currency into contract address
      */
     function depositNative() external payable {
+        require(msg.value > 0, "Deposit amount must be non-zero");
         emit BridgedDeposit(msg.sender, address(0), msg.value); // Maybe create new events for ETH deposit/withdraw
     }
 
@@ -165,14 +180,22 @@ contract MultipliBridger is OwnableUpgradeable {
      * NOTE: Restricted deposit function for rebalancing
      */
     function addFunds(address token, uint256 amount) external _isAuthorized {
+        require(token != address(0), "Token is the zero address");
+        require(amount > 0, "Amount must be non-zero");
         TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount);
+
+        emit FundsAdded(token, amount);
     }
 
     /**
      * @dev Deposit native chain currency into the contract address
      * NOTE: Restricted deposit function for rebalancing
      */
-    function addFundsNative() external payable _isAuthorized {}
+    function addFundsNative() external payable _isAuthorized {
+        require(msg.value > 0, "Amount must be non-zero");
+
+        emit FundsAddedNative(msg.value);
+    }
 
     /**
      * @dev withdraw ERC20 tokens from the contract address
@@ -183,6 +206,9 @@ contract MultipliBridger is OwnableUpgradeable {
         _isAuthorized
         _validateWithdrawalId(withdrawalId)
     {
+        require(token != address(0), "Token is the zero address");
+        require(to != address(0), "Recipient is the zero address");
+        require(amount > 0, "Amount must be non-zero");
         processedWithdrawalIds[withdrawalId] = true;
         TransferHelper.safeTransfer(token, to, amount);
         emit BridgedWithdrawal(to, token, amount, withdrawalId);
@@ -197,6 +223,8 @@ contract MultipliBridger is OwnableUpgradeable {
         _isAuthorized
         _validateWithdrawalId(withdrawalId)
     {
+        require(to != address(0), "Recipient is the zero address");
+        require(amount > 0, "Amount must be non-zero");
         processedWithdrawalIds[withdrawalId] = true;
         removeFundsNative(to, amount);
         emit BridgedWithdrawal(to, address(0), amount, withdrawalId);
@@ -207,7 +235,12 @@ contract MultipliBridger is OwnableUpgradeable {
      * NOTE: only for authorized users for rebalancing
      */
     function removeFunds(address token, address to, uint256 amount) external _isAuthorized {
+        require(token != address(0), "Token is the zero address");
+        require(to != address(0), "Recipient is the zero address");
+        require(amount > 0, "Amount must be non-zero");
         TransferHelper.safeTransfer(token, to, amount);
+
+        emit FundsRemoved(token, to, amount);
     }
 
     /**
@@ -215,9 +248,13 @@ contract MultipliBridger is OwnableUpgradeable {
      * NOTE: only for authorized users for rebalancing
      */
     function removeFundsNative(address payable to, uint256 amount) public _isAuthorized {
+        require(to != address(0), "Recipient is the zero address");
+        require(amount > 0, "Amount must be non-zero");
         require(address(this).balance >= amount, "INSUFFICIENT_BALANCE");
         (bool success,) = to.call{value: amount}("");
         require(success, "TRANSFER_FAILED");
+
+        emit FundsRemovedNative(to, amount);
     }
 
     /**

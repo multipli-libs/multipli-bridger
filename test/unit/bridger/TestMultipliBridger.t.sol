@@ -680,32 +680,13 @@ contract TestMultipliBridger is Test {
         vm.stopPrank();
     }
 
-    function testDepositNativeIsSuccessOnZeroAmount() public deployerIsNaruto {
-        // ensure contract has some balance
-        deal(address(bridger), 1 ether);
-        assertEq(address(bridger).balance, 1 ether);
-        uint256 contractBalanceBefore = address(bridger).balance; // 1 ether
-
-        // ensure balance of Minato is 11
-        deal(minatoAddr, 11 ether);
-        assertEq(address(minatoAddr).balance, 11 ether);
-
+    function testDepositNativeRevertsOnZeroAmount() public deployerIsNaruto {
+        // Zero-value deposits are rejected: they have no economic effect and
+        // would pollute the BridgedDeposit event stream consumed by the
+        // off-chain bridge indexer.
         vm.startPrank(minatoAddr);
-        // amount to deposit
-        uint256 amountToDeposit = 0 ether;
-
-        // set emit expectations
-        vm.expectEmit(true, true, false, true);
-        emit MultipliBridger.BridgedDeposit(minatoAddr, address(0), amountToDeposit);
-
-        // make the call
-        bridger.depositNative{value: amountToDeposit}();
-
-        // get current balance
-        // and verify the balances match up after deposit is made
-        uint256 contractBalanceNow = address(bridger).balance;
-        assertEq(contractBalanceNow, contractBalanceBefore);
-
+        vm.expectRevert("Deposit amount must be non-zero");
+        bridger.depositNative{value: 0 ether}();
         vm.stopPrank();
     }
 
